@@ -91,3 +91,40 @@ class PortfolioScoreResult(BaseModel):
     metric_values: Dict[str, Any]
     all_evidence: List[EvidenceItem]
 
+
+class PriorityAction(BaseModel):
+    """Actionable improvement recommendation."""
+    title: str
+    priority: str = "High"  # High, Medium, Low
+    issue: str
+    action: str
+    qualitative_impact: str
+
+
+class RoadmapStep(BaseModel):
+    """Phased improvement step in portfolio roadmap."""
+    timeframe: str
+    actions: List[str]
+
+
+class RecruiterCritique(BaseModel):
+    """Structured recruiter synthesis generated from factual evidence and deterministic scores."""
+    recruiter_in_30_seconds: str
+    candidate_level_assessment: str
+    strengths: List[str]
+    weaknesses: List[str]
+    top_3_fixes: List[PriorityAction]
+    roadmap: List[RoadmapStep]
+    is_ai_generated: bool = True
+    ai_model: Optional[str] = None
+
+
+class CompletePortfolioReport(BaseModel):
+    """Consolidated portfolio report containing profile, deterministic scores, and recruiter critique."""
+    username: str
+    profile: GitHubUserProfile
+    scores: PortfolioScoreResult
+    critique: RecruiterCritique
+    generated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
