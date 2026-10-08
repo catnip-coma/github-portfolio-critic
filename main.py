@@ -38,24 +38,35 @@ async def github_client_exception_handler(request: Request, exc: GitHubClientErr
 # Include API routes
 app.include_router(api_router, prefix="/api")
 
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+
 # Ensure static & templates directories exist
 os.makedirs("app/static", exist_ok=True)
 os.makedirs("app/templates", exist_ok=True)
 
-# Mount static files
+# Mount static files and Jinja2 templates
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+templates = Jinja2Templates(directory="app/templates")
 
 
-@app.get("/")
-async def root():
-    """Temporary root endpoint for Hour 1 status verification."""
+@app.get("/", response_class=HTMLResponse, summary="GitGauge Dashboard")
+async def root(request: Request):
+    """Serve the interactive GitGauge recruiter dashboard."""
+    return templates.TemplateResponse(request=request, name="index.html")
+
+
+@app.get("/api", summary="API Metadata")
+async def api_info():
+    """API overview and documentation links."""
     return {
-        "message": "Welcome to GitGauge API",
-        "status": "ready",
+        "app": "GitGauge",
         "docs": "/docs",
         "endpoints": {
             "health": "/api/health",
-            "github_profile": "/api/raw/{username}"
+            "raw_github": "/api/raw/{username}",
+            "score": "/api/score/{username}",
+            "analyze": "/api/analyze/{username}"
         }
     }
 

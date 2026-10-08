@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitGauge — Recruiter-Grade GitHub Portfolio Critic</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="bg-[#090d16] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-slate-800/80 bg-[#090d16]/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+                    <i data-lucide="gauge" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <span class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+                        GitGauge
+                        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800">MVP</span>
+                    </span>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 text-xs text-slate-400">
+                <span class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-900 border border-slate-800">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    Deterministic Heuristics + Gemini 2.5 Flash
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8 sm:py-12 space-y-10">
+
+        <!-- Hero & Input Experience -->
+        <section class="text-center max-w-2xl mx-auto space-y-4">
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+                How does your GitHub portfolio look to a <span class="text-indigo-400">tech recruiter?</span>
+            </h1>
+            <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
+                Enter any public GitHub username to audit your portfolio with deterministic hiring heuristics, verifiable evidence, and actionable critique.
+            </p>
+
+            <!-- Search Form -->
+            <form id="search-form" class="mt-6 flex flex-col sm:flex-row gap-2.5 max-w-lg mx-auto">
+                <div class="relative flex-1">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <i data-lucide="github" class="w-4 h-4"></i>
+                    </div>
+                    <input 
+                        type="text" 
+                        id="username-input" 
+                        placeholder="Enter a GitHub username (e.g. octocat)" 
+                        required 
+                        autocomplete="off"
+                        class="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-900 border border-slate-700/80 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-inner"
+                    >
+                </div>
+                <button 
+                    type="submit" 
+                    id="analyze-btn" 
+                    class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 shrink-0 active:scale-[0.98]"
+                >
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    <span>Analyze Portfolio</span>
+                </button>
+            </form>
+
+            <!-- Demo User Suggestions -->
+            <div class="flex items-center justify-center gap-2 text-xs text-slate-400 pt-2 flex-wrap">
+                <span class="text-slate-500">Try demo profiles:</span>
+                <button type="button" class="demo-btn px-2.5 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-mono transition-colors" data-username="octocat">@octocat</button>
+                <button type="button" class="demo-btn px-2.5 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-mono transition-colors" data-username="navyakv">@navyakv</button>
+            </div>
+        </section>
+
+        <!-- Loading State Indicator -->
+        <div id="loading-state" class="hidden py-16 text-center space-y-4">
+            <div class="inline-block relative">
+                <div class="w-12 h-12 rounded-full border-2 border-indigo-500/20 border-t-indigo-500 animate-spin"></div>
+            </div>
+            <div class="space-y-1">
+                <p id="loading-message" class="text-slate-200 font-medium text-sm transition-all duration-300">
+                    Fetching GitHub profile and public repositories...
+                </p>
+                <p class="text-xs text-slate-500">Running deterministic checks & AI synthesis</p>
+            </div>
+        </div>
+
+        <!-- Error Banner -->
+        <div id="error-banner" class="hidden max-w-2xl mx-auto p-4 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-300 text-sm flex items-start gap-3">
+            <i data-lucide="alert-circle" class="w-5 h-5 shrink-0 text-rose-400 mt-0.5"></i>
+            <div class="space-y-1">
+                <p class="font-semibold text-rose-200">Analysis Encountered an Issue</p>
+                <p id="error-message" class="text-rose-300/90 text-xs sm:text-sm"></p>
+            </div>
+        </div>
+
+        <!-- Results Dashboard Container -->
+        <div id="results-container" class="hidden space-y-10">
+
+            <!-- 1. Profile Header -->
+            <section id="section-profile" class="p-5 sm:p-6 rounded-2xl bg-slate-900/60 border border-slate-800 shadow-xl flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
+                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
+                    <img id="profile-avatar" src="" alt="Avatar" class="w-20 h-20 rounded-2xl border-2 border-slate-700 bg-slate-800 object-cover shadow-md shrink-0">
+                    <div class="space-y-1.5">
+                        <div class="flex items-center gap-2.5 justify-center sm:justify-start flex-wrap">
+                            <h2 id="profile-name" class="text-xl font-bold text-white tracking-tight"></h2>
+                            <span id="profile-login" class="text-sm font-mono text-slate-400"></span>
+                            <span id="profile-readme-badge" class="hidden text-[11px] px-2 py-0.5 rounded-full bg-emerald-950/70 text-emerald-300 border border-emerald-800/60">
+                                Profile README
+                            </span>
+                        </div>
+                        <p id="profile-bio" class="text-sm text-slate-300 max-w-xl leading-relaxed"></p>
+                        <div class="flex items-center gap-4 text-xs text-slate-400 pt-1 justify-center sm:justify-start">
+                            <span><strong id="profile-repos-count" class="text-white font-mono">0</strong> Repos</span>
+                            <span>•</span>
+                            <span><strong id="profile-followers-count" class="text-white font-mono">0</strong> Followers</span>
+                            <span>•</span>
+                            <span><strong id="profile-following-count" class="text-white font-mono">0</strong> Following</span>
+                        </div>
+                    </div>
+                </div>
+                <a id="profile-github-link" href="#" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 flex items-center gap-2 transition-colors shrink-0">
+                    <span>View GitHub</span>
+                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                </a>
+            </section>
+
+            <!-- 2. Overall Portfolio Score (Visual Centerpiece) -->
+            <section id="section-score" class="p-8 rounded-2xl bg-gradient-to-b from-slate-900/90 to-slate-900/40 border border-slate-800 shadow-2xl text-center relative overflow-hidden">
+                <div class="max-w-md mx-auto flex flex-col items-center space-y-4">
+                    <span class="text-xs uppercase tracking-widest font-semibold text-slate-400">Overall Portfolio Score</span>
+                    
+                    <!-- Circular Radial Gauge -->
+                    <div class="relative w-48 h-48 flex items-center justify-center my-2">
+                        <svg class="w-full h-full" viewBox="0 0 160 160">
+                            <!-- Background Track -->
+                            <circle cx="80" cy="80" r="70" class="text-slate-800" stroke-width="12" stroke="currentColor" fill="transparent" />
+                            <!-- Animated Score Ring -->
+                            <circle 
+                                id="overall-score-ring" 
+                                cx="80" cy="80" r="70" 
+                                class="gauge-ring-circle text-indigo-500" 
+                                stroke-width="12" 
+                                stroke="currentColor" 
+                                fill="transparent" 
+                                stroke-linecap="round"
+                            />
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span id="overall-score-value" class="text-5xl font-extrabold font-mono text-white tracking-tight">0</span>
+                            <span class="text-xs text-slate-500 font-mono">out of 100</span>
+                        </div>
+                    </div>
+
+                    <!-- Candidate Tier Verdict Badge -->
+                    <div id="candidate-level-badge" class="px-4 py-1.5 rounded-full text-xs font-semibold border">
+                        Candidate Assessment
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Recruiter in 30 Seconds -->
+            <section id="section-recruiter-30s" class="p-6 sm:p-8 rounded-2xl bg-indigo-950/20 border border-indigo-900/40 shadow-xl space-y-4 relative">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-600/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30">
+                            <i data-lucide="briefcase" class="w-4 h-4"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white tracking-tight">Recruiter in 30 Seconds</h3>
+                    </div>
+                    <span id="ai-mode-badge" class="text-xs"></span>
+                </div>
+
+                <div class="p-4 sm:p-5 rounded-xl bg-slate-900/80 border border-slate-800">
+                    <p id="recruiter-30s-text" class="text-slate-200 text-sm sm:text-base leading-relaxed italic"></p>
+                </div>
+            </section>
+
+            <!-- 4. Five Category Scores -->
+            <section id="section-categories" class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4 text-indigo-400"></i>
+                        Portfolio Dimension Breakdown
+                    </h3>
+                    <span class="text-xs text-slate-500 font-mono">Weighted 0–100 Scale</span>
+                </div>
+                <div id="category-scores-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                    <!-- Populated dynamically -->
+                </div>
+            </section>
+
+            <!-- 5. Strengths vs Weaknesses -->
+            <section id="section-swot" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- What's Working -->
+                <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
+                    <div class="flex items-center gap-2 text-emerald-400">
+                        <i data-lucide="thumbs-up" class="w-4 h-4"></i>
+                        <h4 class="text-base font-bold text-white tracking-tight">What's Working</h4>
+                    </div>
+                    <ul id="strengths-list" class="space-y-3">
+                        <!-- Populated dynamically -->
+                    </ul>
+                </div>
+
+                <!-- Red Flags / Needs Work -->
+                <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
+                    <div class="flex items-center gap-2 text-rose-400">
+                        <i data-lucide="alert-octagon" class="w-4 h-4"></i>
+                        <h4 class="text-base font-bold text-white tracking-tight">Red Flags & Gaps</h4>
+                    </div>
+                    <ul id="weaknesses-list" class="space-y-3">
+                        <!-- Populated dynamically -->
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 6. Evidence-backed Analysis -->
+            <section id="section-evidence" class="space-y-4">
+                <div>
+                    <h3 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                        <i data-lucide="check-check" class="w-4 h-4 text-indigo-400"></i>
+                        Evidence-Backed Audit Facts
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">Verifiable metrics retrieved directly from GitHub data — zero hallucinations.</p>
+                </div>
+                <div id="evidence-accordion-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Populated dynamically -->
+                </div>
+            </section>
+
+            <!-- 7. Top 3 Things to Fix -->
+            <section id="section-fixes" class="space-y-4">
+                <div>
+                    <h3 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                        <i data-lucide="target" class="w-4 h-4 text-indigo-400"></i>
+                        Top 3 Things to Fix First
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">Highest-ROI qualitative adjustments to improve recruiter review outcomes.</p>
+                </div>
+                <div id="top-fixes-container" class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <!-- Populated dynamically -->
+                </div>
+            </section>
+
+            <!-- 8. Practical Improvement Roadmap -->
+            <section id="section-roadmap" class="space-y-4">
+                <div>
+                    <h3 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                        <i data-lucide="map" class="w-4 h-4 text-indigo-400"></i>
+                        Step-by-Step Improvement Roadmap
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">A structured sequence to elevate your GitHub presence over time.</p>
+                </div>
+                <div id="roadmap-container" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Populated dynamically -->
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 bg-[#090d16] py-6 text-center text-xs text-slate-500">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <span>GitGauge © 2026 — Recruiter Portfolio Auditor</span>
+            <span>Built with FastAPI + Gemini 2.5 Flash + Tailwind CSS</span>
+        </div>
+    </footer>
+
+    <!-- Client Script -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
