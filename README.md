@@ -1,7 +1,7 @@
 # GitGauge 🎯
 
 > **Recruiter-grade GitHub Portfolio Critic & Auditor**  
-> An 6-hour hackathon project providing deterministic scoring and AI-powered portfolio insights for developers.
+> An 8-hour hackathon project providing deterministic scoring and AI-powered portfolio insights for developers.
 
 ---
 
