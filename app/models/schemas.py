@@ -65,3 +65,29 @@ class ErrorResponse(BaseModel):
     error: str
     detail: Optional[str] = None
     status_code: int
+
+
+class EvidenceItem(BaseModel):
+    """Factual, verifiable evidence item behind a score."""
+    metric: str
+    value: Any
+    total: Optional[Any] = None
+    evidence: str
+
+
+class CategoryScore(BaseModel):
+    """Detailed score for one of the five portfolio dimensions."""
+    name: str
+    weight: float
+    score: float
+    weighted_score: float
+    evidence: List[EvidenceItem] = Field(default_factory=list)
+
+
+class PortfolioScoreResult(BaseModel):
+    """Complete deterministic scoring output for a GitHub portfolio."""
+    overall_score: float
+    category_scores: Dict[str, CategoryScore]
+    metric_values: Dict[str, Any]
+    all_evidence: List[EvidenceItem]
+
