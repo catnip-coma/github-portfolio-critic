@@ -117,13 +117,13 @@ class PortfolioScorer:
         score = 0.0
         evidence: List[EvidenceItem] = []
 
-        # (a) Original repository count (max 30 pts)
+        # (a) Meaningful original repository count (Core substance, max 45 pts)
         if self.total_original >= 5:
-            score += 30.0
+            score += 45.0
         elif self.total_original >= 3:
-            score += 25.0
+            score += 35.0
         elif self.total_original >= 1:
-            score += 15.0
+            score += 20.0
 
         evidence.append(EvidenceItem(
             metric="original_repositories",
@@ -132,33 +132,31 @@ class PortfolioScorer:
             evidence=f"{self.total_original} of {self.total_repos} analyzed repositories are original (not forks)."
         ))
 
-        # (b) Substantial projects by size (size_kb >= 50) (max 25 pts)
+        # (b) Codebase size presence as supporting signal (size_kb >= 50) (max 20 pts)
         substantial_repos = [r for r in self.original_repos if r.size_kb >= 50]
         substantial_count = len(substantial_repos)
         if self.total_original > 0:
             size_ratio = substantial_count / self.total_original
-            score += round(size_ratio * 25.0, 1)
+            score += round(size_ratio * 20.0, 1)
 
         evidence.append(EvidenceItem(
             metric="substantial_repositories_size",
             value=substantial_count,
             total=self.total_original,
-            evidence=f"{substantial_count} of {self.total_original} original repositories have a codebase size >= 50 KB."
+            evidence=f"{substantial_count} of {self.total_original} original repositories have a recorded codebase size >= 50 KB (excluding empty repositories)."
         ))
 
-        # (c) Programming language diversity (max 25 pts)
-        # Rewards focused stack (2-4 languages) without inflating for 10+ random repos
+        # (c) Programming language focus & presence (Supporting signal, max 20 pts)
+        # Avoids over-rewarding language hopping; recognizes depth in 1-2 core languages
         languages = [r.language for r in self.repos if r.language and r.language.strip()]
         lang_counts = Counter(languages)
         distinct_langs = list(lang_counts.keys())
         num_langs = len(distinct_langs)
 
-        if num_langs >= 4:
-            score += 25.0
-        elif num_langs >= 2:
+        if num_langs >= 2:
             score += 20.0
         elif num_langs == 1:
-            score += 12.0
+            score += 15.0
 
         top_langs_str = ", ".join(f"{lang} ({cnt})" for lang, cnt in lang_counts.most_common(3))
         evidence.append(EvidenceItem(
@@ -168,18 +166,18 @@ class PortfolioScorer:
             evidence=f"{num_langs} distinct programming languages detected across repositories: {top_langs_str or 'None'}."
         ))
 
-        # (d) Technical topics / tags presence (max 20 pts)
+        # (d) Repository topic tags (Discoverability metadata, max 15 pts)
         repos_with_topics = [r for r in self.repos if len(r.topics) > 0]
         topics_count = len(repos_with_topics)
         if self.total_repos > 0:
             topics_ratio = topics_count / self.total_repos
-            score += round(topics_ratio * 20.0, 1)
+            score += round(topics_ratio * 15.0, 1)
 
         evidence.append(EvidenceItem(
             metric="repositories_with_topics",
             value=topics_count,
             total=self.total_repos,
-            evidence=f"{topics_count} of {self.total_repos} analyzed repositories have technical topic tags."
+            evidence=f"{topics_count} of {self.total_repos} analyzed repositories have topic tags for discoverability."
         ))
 
         final_score = round(max(0.0, min(100.0, score)), 1)
@@ -374,7 +372,7 @@ class PortfolioScorer:
             metric="readme_visuals_detected",
             value=has_visuals,
             total=None,
-            evidence="Images, architecture diagrams, or screenshots detected in repository READMEs." if has_visuals else "No images, diagrams, or screenshots detected in repository READMEs."
+            evidence="Visual elements (e.g., images, diagrams, or screenshots) detected in repository READMEs." if has_visuals else "No visual elements detected in repository READMEs."
         ))
 
         final_score = round(max(0.0, min(100.0, score)), 1)
